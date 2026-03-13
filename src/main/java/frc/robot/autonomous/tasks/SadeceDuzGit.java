@@ -13,7 +13,7 @@ public class SadeceDuzGit {
     
     public static Command getTask(Drivetrain drivetrain, Intake intake) {
         try {
-            PathPlannerPath path = PathPlannerPath.fromPathFile("SadeceDuzGitRotasi");
+            PathPlannerPath path = PathPlannerPath.fromPathFile("SadeceDuzGit");
 
             return new SequentialCommandGroup(
                 Commands.runOnce(() -> intake.deploy()),
@@ -21,7 +21,7 @@ public class SadeceDuzGit {
             );
             
         } catch (Exception e) {
-            System.out.println("OTONOM HATASI: 'SadeceDuzGitRotasi' dosyasi bulunamadi!");
+            System.out.println("OTONOM HATASI: 'SadeceDuzGit' dosyasi bulunamadi!");
             e.printStackTrace();
             return Commands.none(); 
         }

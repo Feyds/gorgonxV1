@@ -47,10 +47,10 @@ public class MainOtonom {
         );
 
         try {
-            return AutoBuilder.buildAuto("MainOtonomDosyasi");
+            return AutoBuilder.buildAuto("MainOtonom");
             
         } catch (Exception e) {
-            System.out.println("OTONOM HATASI: 'MainOtonomDosyasi.auto' bulunamadi!");
+            System.out.println("OTONOM HATASI: 'MainOtonom.auto' bulunamadi!");
             e.printStackTrace();
             return Commands.none();
         }

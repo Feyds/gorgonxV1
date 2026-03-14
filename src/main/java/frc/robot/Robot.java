@@ -4,11 +4,16 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+
+import java.util.Optional;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -71,6 +76,23 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Hedef Goruldu", vision.hasTarget());
     SmartDashboard.putNumber("Mesafe (Metre)", vision.getDistanceToTargetMeters());
     SmartDashboard.putBoolean("Shooter Hazir", shooter.isAtTargetRPM(vision.getDistanceToTargetMeters()));
+
+    String gameData = DriverStation.getGameSpecificMessage();
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+
+    boolean hub = false; 
+
+    if (alliance.isPresent() && gameData != null && !gameData.isEmpty()) {
+        char activeHub = gameData.charAt(0);
+
+        if (alliance.get() == Alliance.Red && activeHub == 'R') {
+            hub = true;
+        } else if (alliance.get() == Alliance.Blue && activeHub == 'B') {
+            hub = true;
+        }
+
+    SmartDashboard.putBoolean("Hub Durumumuz", hub);
+    }
   }
 
   @Override

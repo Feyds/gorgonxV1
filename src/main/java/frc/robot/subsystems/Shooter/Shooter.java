@@ -41,9 +41,11 @@ public class Shooter {
         
         kickerMotor.configure(kickerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        rpmMap.put(1.5, 3000.0);
-        rpmMap.put(3.0, 4200.0);
-        rpmMap.put(5.0, 5500.0);
+        rpmMap.put(1.5, 2200.0);
+        rpmMap.put(2.5, 3100.0);
+        rpmMap.put(3.5, 3800.0);
+        rpmMap.put(4.5, 4500.0);
+        rpmMap.put(6.0, 5600.0);
     }
 
     public void setRPM(double distanceMeters) {

@@ -19,7 +19,7 @@ public class AutoChooser {
         chooser.setDefaultOption("Sadece Düz Git", SadeceDuzGit.getTask(drivetrain, intake));
 
         chooser.addOption("Ana Otonom (Trench ve Outpost)", MainOtonom.getTask(drivetrain, shooter, feeder, intake, vision));
-        chooser.addOption("Düz git", SadeceDuzGit.getTask(drivetrain, intake));
+        //chooser.addOption("Düz git", SadeceDuzGit.getTask(drivetrain, intake));
 
         SmartDashboard.putData("Otonom Secimi", chooser);
     }

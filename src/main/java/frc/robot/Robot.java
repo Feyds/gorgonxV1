@@ -90,9 +90,8 @@ public class Robot extends TimedRobot {
         } else if (alliance.get() == Alliance.Blue && activeHub == 'B') {
             hub = true;
         }
-
-    SmartDashboard.putBoolean("Hub Durumumuz", hub);
     }
+    SmartDashboard.putBoolean("Hub Durumumuz", hub);
   }
 
   @Override

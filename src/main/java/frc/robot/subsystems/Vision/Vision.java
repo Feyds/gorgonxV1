@@ -2,6 +2,7 @@ package frc.robot.subsystems.Vision;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 
 public class Vision {
     private final NetworkTable limelightTable;
@@ -49,5 +50,24 @@ public class Vision {
         double distance = heightDifference / Math.tan(angleToGoalRadians);
         
         return distance;
+    }
+
+    public boolean isValidHubTarget() {
+        if (!hasTarget()) {
+            return false;
+        }
+
+        int currentTargetID = getTargetID();
+        var alliance = DriverStation.getAlliance();
+
+        if (alliance.isPresent()) {
+            if (alliance.get() == DriverStation.Alliance.Red) {
+                return (currentTargetID == 5 || currentTargetID == 8 || currentTargetID == 9 || currentTargetID == 10 || currentTargetID == 11 || currentTargetID == 2);
+            } else {
+                return (currentTargetID == 21 || currentTargetID == 24 || currentTargetID == 25 || currentTargetID == 26 || currentTargetID == 27 || currentTargetID == 18);
+            }
+        }
+        
+        return false; //TODO: ATÖLYE TESTİ İÇİN TRUE YAPILDI BUNU FALSE OLARAK DEĞİŞTİRMELİSİN!!!!!!!!!!!!!!
     }
 }

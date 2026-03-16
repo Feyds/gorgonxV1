@@ -41,15 +41,21 @@ public class Vision {
         }
 
         double targetOffsetAngle_Vertical = getTy();
-
         double angleToGoalDegrees = VisionConstants.MOUNT_ANGLE_DEGREES + targetOffsetAngle_Vertical;
         double angleToGoalRadians = Math.toRadians(angleToGoalDegrees);
-
         double heightDifference = VisionConstants.TARGET_HEIGHT_METERS - VisionConstants.LENS_HEIGHT_METERS;
-
-        double distance = heightDifference / Math.tan(angleToGoalRadians);
         
-        return distance;
+        return heightDifference / Math.tan(angleToGoalRadians);
+    }
+
+    public double[] getBotPoseWpiBlue() {
+        return limelightTable.getEntry("botpose_wpiblue").getDoubleArray(new double[6]);
+    }
+
+    public double getLatencySeconds() {
+        double tl = limelightTable.getEntry("tl").getDouble(0.0);
+        double cl = limelightTable.getEntry("cl").getDouble(0.0);
+        return (tl + cl) / 1000.0;
     }
 
     public boolean isValidHubTarget() {
@@ -68,6 +74,6 @@ public class Vision {
             }
         }
         
-        return false; //TODO: ATÖLYE TESTİ İÇİN TRUE YAPILDI BUNU FALSE OLARAK DEĞİŞTİRMELİSİN!!!!!!!!!!!!!!
+        return true; // TODO: ATÖLYE TESTİ İÇİN TRUE YAPILDI BUNU MAÇ ÖNCESİ DEĞİŞTİRMELİSİN!!!!!!!!!!!!!!!!
     }
 }

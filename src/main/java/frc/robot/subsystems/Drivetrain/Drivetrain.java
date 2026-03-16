@@ -1,15 +1,13 @@
 package frc.robot.subsystems.Drivetrain;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
-
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,10 +18,10 @@ public class Drivetrain extends SubsystemBase {
     private final SwerveModule backLeft;
     private final SwerveModule backRight;
     private final Pigeon2 gyro;
-    private final SwerveDriveOdometry odometry;
+
+    private final SwerveDrivePoseEstimator poseEstimator;
 
     private final Field2d m_field = new Field2d();
-    private double simGyroAngle = 0.0;
 
     public Drivetrain() {
         frontLeft = new SwerveModule("FrontLeft", SwerveConstants.FL_DRIVE_ID, SwerveConstants.FL_ANGLE_ID, SwerveConstants.FL_CANCODER_ID, SwerveConstants.FL_OFFSET);
@@ -34,10 +32,11 @@ public class Drivetrain extends SubsystemBase {
         gyro = new Pigeon2(SwerveConstants.PIGEON_ID);
         gyro.reset(); 
 
-        odometry = new SwerveDriveOdometry(
+        poseEstimator = new SwerveDrivePoseEstimator(
             SwerveConstants.KINEMATICS, 
             getRotation2d(), 
-            getModulePositions()
+            getModulePositions(),
+            new Pose2d()
         );
 
         SmartDashboard.putData("Field", m_field);
@@ -61,18 +60,19 @@ public class Drivetrain extends SubsystemBase {
     }
     
     public Rotation2d getRotation2d() {
-        if (RobotBase.isSimulation()) {
-            return Rotation2d.fromRadians(simGyroAngle);
-        }
         return Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble());
     }
 
     public Pose2d getPose() {
-        return odometry.getPoseMeters();
+        return poseEstimator.getEstimatedPosition();
     }
 
     public void resetOdometry(Pose2d pose) {
-        odometry.resetPosition(getRotation2d(), getModulePositions(), pose);
+        poseEstimator.resetPosition(getRotation2d(), getModulePositions(), pose);
+    }
+
+    public void addVisionMeasurement(Pose2d visionMeasurement, double timestampSeconds) {
+        poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds);
     }
 
     public ChassisSpeeds getChassisSpeeds() {
@@ -85,32 +85,15 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public void periodic() {
-        odometry.update(getRotation2d(), getModulePositions());
+        poseEstimator.update(getRotation2d(), getModulePositions());
+        
         SmartDashboard.putNumber("Gyro Yaw", getRotation2d().getDegrees());
-        m_field.setRobotPose(odometry.getPoseMeters());
+        m_field.setRobotPose(getPose());
 
         frontLeft.updateTelemetry();
         frontRight.updateTelemetry();
         backLeft.updateTelemetry();
         backRight.updateTelemetry();
-    }
-
-    public void simulationPeriodic() {
-        double dt = 0.02;
-
-        frontLeft.simulationPeriodic(dt);
-        frontRight.simulationPeriodic(dt);
-        backLeft.simulationPeriodic(dt);
-        backRight.simulationPeriodic(dt);
-
-        var chassisSpeeds = SwerveConstants.KINEMATICS.toChassisSpeeds(
-            frontLeft.getState(),
-            frontRight.getState(),
-            backLeft.getState(),
-            backRight.getState()
-        );
-
-        simGyroAngle += chassisSpeeds.omegaRadiansPerSecond * dt;
     }
     
     public void resetGyro() {

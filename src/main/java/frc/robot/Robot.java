@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -11,6 +7,8 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 import java.util.Optional;
 
@@ -73,6 +71,19 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     drivetrain.periodic(); 
 
+    if (vision.hasTarget()) {
+        double[] botpose = vision.getBotPoseWpiBlue();
+        if (botpose != null && botpose.length >= 6 && (botpose[0] != 0.0 || botpose[1] != 0.0)) {
+            Pose2d visionPose = new Pose2d(
+                botpose[0], 
+                botpose[1], 
+                Rotation2d.fromDegrees(botpose[5])
+            );
+            double timestamp = Timer.getFPGATimestamp() - vision.getLatencySeconds();
+            drivetrain.addVisionMeasurement(visionPose, timestamp);
+        }
+    }
+
     SmartDashboard.putBoolean("Hedef Goruldu", vision.hasTarget());
     SmartDashboard.putNumber("Mesafe (Metre)", vision.getDistanceToTargetMeters());
     SmartDashboard.putBoolean("Shooter Hazir", shooter.isAtTargetRPM(vision.getDistanceToTargetMeters()));
@@ -132,11 +143,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    boolean hasTarget = vision.hasTarget();
+    boolean hasValidTarget = vision.isValidHubTarget();
     double currentTx = vision.getTx();
     double currentDistance = vision.getDistanceToTargetMeters();
 
-    if (hasTarget) {
+    if (hasValidTarget) {
         lastKnownTx = currentTx;
         lastKnownDistance = currentDistance;
         targetLostTimer.restart();
@@ -161,9 +172,8 @@ public class Robot extends TimedRobot {
     if (driver.isAutoAimAndShoot()) {
         vision.setPipeline(0);
 
-        if (hasTarget || !targetLostTimer.hasElapsed(1.0)) {
-
-            if (hasTarget) {
+        if (hasValidTarget || !targetLostTimer.hasElapsed(1.0)) {
+            if (hasValidTarget) {
                 rot = aimPID.calculate(currentTx, 0);
             } else {
                 rot = 0.0;
@@ -171,7 +181,7 @@ public class Robot extends TimedRobot {
 
             shooter.setRPM(lastKnownDistance);
 
-            if (shooter.isAtTargetRPM(lastKnownDistance) && (hasTarget ? aimPID.atSetpoint() : true)) {
+            if (shooter.isAtTargetRPM(lastKnownDistance) && (hasValidTarget ? aimPID.atSetpoint() : true)) {
                 feeder.feedToShooter();
                 driver.setRumble(1.0);
             } else {
@@ -182,6 +192,16 @@ public class Robot extends TimedRobot {
             shooter.stop();
             feeder.stop();
             driver.setRumble(0);
+        }
+    } else if (driver.isArtilleryMode()) {
+        shooter.setRPM(6.0); 
+        
+        if (shooter.isAtTargetRPM(6.0)) {
+            feeder.feedToShooter();
+            driver.setRumble(0.5);
+        } else {
+            feeder.stop();
+            driver.setRumble(0.2);
         }
     } else if (driver.isIntakeAndIndex()) {
         intake.setRollerPower(1.0);

@@ -42,6 +42,10 @@ public class Driver {
         return controller.getR1Button();
     }
 
+    public boolean isArtilleryMode() {
+        return controller.getTriangleButton();
+    }
+
     public void setRumble(double intensity) {
         controller.setRumble(RumbleType.kBothRumble, intensity);
     }
